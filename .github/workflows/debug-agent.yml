@@ -85,7 +85,10 @@ jobs:
 
   debug:
     needs: build-and-test
-    if: needs.build-and-test.outputs.failed == 'true' && github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: |
+      needs.build-and-test.outputs.failed == 'true'
+      && (github.event_name != 'pull_request'
+          || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -1,0 +1,10 @@
+{
+  "name": "github-agent-debug",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --check src/index.js",
+    "test": "node src/index.js"
+  }
+}
