@@ -1,0 +1,39 @@
+name: Reusable Debug Agent
+on:
+  workflow_call:
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Assemble debug context
+        run: |
+          git diff HEAD~1 > /tmp/full_diff.txt
+          git diff --name-only HEAD~1 | xargs -I{} sh -c 'echo "=== {} ===" && cat {}' > /tmp/changed_files.txt 2>/dev/null
+          echo "=== DIFF ===" > /tmp/debug_context.txt
+          cat /tmp/full_diff.txt >> /tmp/debug_context.txt
+          echo "=== CHANGED FILES ===" >> /tmp/debug_context.txt
+          cat /tmp/changed_files.txt >> /tmp/debug_context.txt
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            A push was just made to this repository. Review the changes in /tmp/debug_context.txt.
+            Follow the instructions in CLAUDE.md to analyze the diff for bugs, errors, or issues.
+            If you find a problem, push a fix to a branch called fix/debug-${{ github.run_id }} and open a PR.
+            If everything looks clean, just comment on the commit with a clean bill of health.
+          claude_args: |
+            --max-turns 8
