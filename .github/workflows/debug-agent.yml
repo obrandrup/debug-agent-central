@@ -121,7 +121,9 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: '--model claude-sonnet-4-5 --max-turns 20'
+          claude_args: '--model claude-sonnet-4-5 --max-turns 40'
+          branch_prefix: 'fix/debug-'
+          base_branch: ${{ github.head_ref || github.ref_name }}
           prompt: |
             You are the Debug Agent. Follow the methodology in debug-agent-instructions.md strictly.
 
@@ -131,17 +133,17 @@ jobs:
             - Build outcome: ${{ needs.build-and-test.outputs.build_outcome }}
             - Test outcome: ${{ needs.build-and-test.outputs.test_outcome }}
 
-            Inputs available on disk:
+            Inputs available on disk (read these first, do not explore the wider repo):
             - ./_debug/install.log
             - ./_debug/build.log
             - ./_debug/test.log
             - ./_debug/commit.diff
             - ./_debug/changed_files.txt
 
-            Required actions:
-            1. Diagnose per debug-agent-instructions.md.
-            2. Apply the minimal fix to source files (never to test files, never //@ts-ignore).
-            3. Create branch fix/debug-${{ github.run_id }}, commit the fix, push, and open a PR to ${{ github.ref_name }}.
-            4. The PR body MUST contain the Debug Agent Report block defined in debug-agent-instructions.md.
-            5. If confidence is Low or root cause is ambiguous, add the label `needs-human-review` to the PR and say so in the report.
-            6. Never push to main or staging directly. Never auto-merge.
+            Your job:
+            1. Diagnose the failure per debug-agent-instructions.md.
+            2. Edit the source file(s) to apply the minimal fix. Do not touch test files, do not add //@ts-ignore or eslint-disable.
+            3. Output a final message that IS the Debug Agent Report block defined in debug-agent-instructions.md. The action will use it as the PR body, so format it exactly as the spec says.
+            4. If confidence is Low, state so in the report and include the phrase "needs-human-review" on its own line at the end.
+
+            Do not run git commands yourself — the action handles branching, committing, pushing, and opening the PR.
