@@ -60,6 +60,7 @@ After diagnosing, produce a structured analysis in your PR description:
 - Never add `// @ts-ignore` or `eslint-disable` as a fix — address the actual error
 - If you cannot identify the root cause with high confidence, say so — create the PR with a "Needs human review" label and explain what is ambiguous
 - Do not modify test files to make tests pass — fix the source code instead
+- If `=== LOCKFILE DIFF ===` shows a version bump on a dependency related to the error, treat it as a breaking API change first — do not modify source code until you've confirmed the new version's API
 
 ## If You're Stuck
 
@@ -76,7 +77,9 @@ Every run gives you:
 
 - `=== BUILD LOG ===` — raw output from `npm run build`
 - `=== TEST LOG ===` — raw output from `npm test`
+- `=== TYPE CHECK ===` — full tsc --noEmit output (all type errors, not just what the build surfaces)
 - `=== GIT DIFF ===` — exactly what changed in the failing commit
+- `=== LOCKFILE DIFF ===` — first 100 lines of package-lock.json diff (resolved version changes only)
 - `=== CHANGED FILE CONTENTS ===` — full contents of touched files
 
 Use these and only these. Do not attempt to read the full repository or make assumptions about files you have not been shown.
